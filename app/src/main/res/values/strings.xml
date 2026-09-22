@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Zyplo Vendor</string>
+    <string name="location_channel">Vendor location</string>
+    <string name="order_channel">New orders</string>
+</resources>
