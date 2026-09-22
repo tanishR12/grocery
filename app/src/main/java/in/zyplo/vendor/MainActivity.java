@@ -27,6 +27,7 @@ import androidx.core.content.ContextCompat;
 
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.onesignal.OneSignal;
 
 import org.json.JSONObject;
 
@@ -97,6 +98,7 @@ public final class MainActivity extends AppCompatActivity {
 
         requestRuntimePermissions();
         loadIntent(getIntent());
+        connectLovablePush(null);
         sendFcmTokenToWebsite();
         webView.postDelayed(this::offerFloatingBubble, 1_500);
     }
@@ -144,8 +146,38 @@ public final class MainActivity extends AppCompatActivity {
 
     private void sendFcmTokenToWebsite() {
         if (FirebaseApp.getApps(this).isEmpty()) return;
-        FirebaseMessaging.getInstance().getToken().addOnSuccessListener(token ->
-                evaluateEvent("zyplo:fcm-token", token));
+        FirebaseMessaging.getInstance().getToken().addOnSuccessListener(token -> {
+            evaluateEvent("zyplo:fcm-token", token);
+            connectLovablePush(token);
+        });
+    }
+
+    private void connectLovablePush(String fcmToken) {
+        String token = fcmToken == null ? "" : fcmToken;
+        String script = "(()=>{"
+                + "const token=" + JSONObject.quote(token) + ";"
+                + "if(token)window.__zyploAndroidFcmToken=token;"
+                + "const findSession=()=>{try{"
+                + "let raw=localStorage.getItem('sb-itjjcscyqqxkeipkccgl-auth-token');"
+                + "if(!raw){for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);"
+                + "if(k&&k.startsWith('sb-')&&k.endsWith('-auth-token')){raw=localStorage.getItem(k);break;}}}"
+                + "if(!raw)return false;const s=JSON.parse(raw);"
+                + "const access=s.access_token||(s.currentSession&&s.currentSession.access_token);"
+                + "const user=s.user||(s.currentSession&&s.currentSession.user);"
+                + "if(!user||!user.id)return false;"
+                + "window.ZyploAndroid.setVendorIdentity(String(user.id));"
+                + "const nativeToken=window.__zyploAndroidFcmToken||'';"
+                + "if(nativeToken&&access){fetch(" + JSONObject.quote(BuildConfig.SUPABASE_URL + "/rest/v1/push_tokens?on_conflict=user_id,token") + ",{"
+                + "method:'POST',headers:{'apikey':" + JSONObject.quote(BuildConfig.SUPABASE_ANON_KEY)
+                + ",'Authorization':'Bearer '+access,'Content-Type':'application/json',"
+                + "'Prefer':'resolution=merge-duplicates'},body:JSON.stringify({user_id:user.id,"
+                + "token:nativeToken,device_type:'android-fcm',is_active:true,last_used_at:new Date().toISOString()})"
+                + "}).catch(()=>{});}return true;}catch(e){return false;}};"
+                + "if(findSession())return;if(window.__zyploAndroidPushTimer)return;"
+                + "let attempts=0;window.__zyploAndroidPushTimer=setInterval(()=>{"
+                + "if(findSession()||++attempts>=60){clearInterval(window.__zyploAndroidPushTimer);"
+                + "window.__zyploAndroidPushTimer=null;}},2000);})();";
+        webView.post(() -> webView.evaluateJavascript(script, null));
     }
 
     private void offerFloatingBubble() {
@@ -205,6 +237,13 @@ public final class MainActivity extends AppCompatActivity {
         public void stopOrderAlarm() {
             stopService(new Intent(MainActivity.this, OrderAlertService.class));
         }
+
+        @JavascriptInterface
+        public void setVendorIdentity(String userId) {
+            if (userId == null || !userId.matches("[0-9a-fA-F-]{36}")) return;
+            OneSignal.login(userId);
+            OneSignal.getUser().addTag("role", "grocery_vendor");
+        }
     }
 
     private final class TrustedWebViewClient extends WebViewClient {
@@ -222,6 +261,7 @@ public final class MainActivity extends AppCompatActivity {
 
         @Override
         public void onPageFinished(WebView view, String url) {
+            connectLovablePush(null);
             sendFcmTokenToWebsite();
         }
     }

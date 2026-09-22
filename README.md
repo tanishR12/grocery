@@ -12,7 +12,7 @@ website as the source of truth while adding Android capabilities:
 
 ## Build
 
-Requirements: JDK 17 and Android SDK 35.
+Requirements: JDK 17 and Android SDK 36.
 
 ```bash
 ./gradlew assembleDebug
@@ -20,27 +20,46 @@ Requirements: JDK 17 and Android SDK 35.
 
 The debug APK is written to `app/build/outputs/apk/debug/app-debug.apk`.
 
-## Firebase configuration
+GitHub Actions also builds `zyplo-partner.apk` on every push and exposes it as
+the `zyplo-partner-apk` workflow artifact. A checked-in test build is available
+at [`downloads/zyplo-partner.apk`](downloads/zyplo-partner.apk).
+
+## Lovable push connection
+
+The app is connected to the push configuration currently deployed by the Zyplo
+Lovable site:
+
+- OneSignal app `9bf9df8e-1124-44aa-bc80-b0399dd26e8a`
+- Firebase project `zyplonew` / sender `847532358161`
+- Supabase project `itjjcscyqqxkeipkccgl`
+
+After vendor login, the app reads the existing Supabase browser session, calls
+OneSignal `login` with the Supabase user ID, and registers native FCM tokens in
+the existing `push_tokens` table as `android-fcm`. This uses the public Supabase
+anon key plus the signed-in user's JWT, so RLS remains in force; no service-role
+key is embedded.
+
+## Direct Firebase configuration
 
 Create an Android Firebase app with package name `in.zyplo.vendor`, enable Cloud
-Messaging, then provide the public Firebase Android identifiers in
-`~/.gradle/gradle.properties` or CI secrets:
+Messaging, and copy its Android `mobilesdk_app_id` into
+`~/.gradle/gradle.properties` or a GitHub Actions variable:
 
 ```properties
 FIREBASE_APPLICATION_ID=1:1234567890:android:abc123
-FIREBASE_API_KEY=...
-FIREBASE_PROJECT_ID=...
-FIREBASE_SENDER_ID=1234567890
 ```
 
-These identifiers configure the Firebase client; a Firebase service-account key
-must remain only on the server. The app sends new/rotated tokens to
-`https://zyplo.in/api/vendor/device-token`, and also dispatches this browser event
-after every page load:
+The deployed public API key, project ID, and sender ID are already configured.
+An Android Firebase App ID cannot be derived from the site's Web App ID; Firebase
+requires the Android-specific value. Never put a Firebase service-account key in
+this repository or APK.
+
+The app registers generated tokens directly in Lovable's existing Supabase
+`push_tokens` table and also dispatches this browser event after every page load:
 
 ```js
 window.addEventListener("zyplo:fcm-token", event => {
-  // POST event.detail to the signed-in vendor's device-token endpoint.
+  // Native token already saved to the signed-in user's push_tokens row.
 });
 ```
 
@@ -53,15 +72,11 @@ The default endpoints can be changed with Gradle properties:
 ZYPLO_BASE_URL=https://zyplo.in/grocery-vendor-login
 ZYPLO_ALLOWED_HOST=zyplo.in
 ZYPLO_LOCATION_ENDPOINT=https://zyplo.in/api/vendor/location
-ZYPLO_DEVICE_TOKEN_ENDPOINT=https://zyplo.in/api/vendor/device-token
 ```
 
 Expected requests:
 
 ```text
-POST /api/vendor/device-token
-{"token":"FCM_TOKEN","platform":"android"}
-
 POST /api/vendor/location
 {"latitude":17.0,"longitude":78.0,"accuracy":8.5,"recorded_at":1780000000000}
 ```
@@ -90,9 +105,8 @@ Accept/reject sends `{"order_id":"ORD-123","action":"accept"}` (or `reject`) to
 the corresponding URL. For safety, the app refuses non-HTTPS endpoints and any
 host outside `zyplo.in`.
 
-The location and token endpoint paths are integration defaults because the
-public website does not publish an API specification. They must exist on the
-Zyplo backend for live tracking and push registration to work.
+The location endpoint remains an integration default because the public website
+does not publish a vendor-location API specification.
 
 ## Permissions
 

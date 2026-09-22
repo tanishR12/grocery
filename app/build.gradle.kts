@@ -19,7 +19,9 @@ android {
         buildConfigField("String", "BASE_URL", "\"${config("ZYPLO_BASE_URL", "https://zyplo.in/grocery-vendor-login")}\"")
         buildConfigField("String", "ALLOWED_HOST", "\"${config("ZYPLO_ALLOWED_HOST", "zyplo.in")}\"")
         buildConfigField("String", "LOCATION_ENDPOINT", "\"${config("ZYPLO_LOCATION_ENDPOINT", "https://zyplo.in/api/vendor/location")}\"")
-        buildConfigField("String", "DEVICE_TOKEN_ENDPOINT", "\"${config("ZYPLO_DEVICE_TOKEN_ENDPOINT", "https://zyplo.in/api/vendor/device-token")}\"")
+        buildConfigField("String", "ONESIGNAL_APP_ID", "\"${config("ONESIGNAL_APP_ID", "9bf9df8e-1124-44aa-bc80-b0399dd26e8a")}\"")
+        buildConfigField("String", "SUPABASE_URL", "\"${config("SUPABASE_URL", "https://itjjcscyqqxkeipkccgl.supabase.co")}\"")
+        buildConfigField("String", "SUPABASE_ANON_KEY", "\"${config("SUPABASE_ANON_KEY")}\"")
         buildConfigField("String", "FIREBASE_APPLICATION_ID", "\"${config("FIREBASE_APPLICATION_ID")}\"")
         buildConfigField("String", "FIREBASE_API_KEY", "\"${config("FIREBASE_API_KEY")}\"")
         buildConfigField("String", "FIREBASE_PROJECT_ID", "\"${config("FIREBASE_PROJECT_ID")}\"")
@@ -55,4 +57,5 @@ dependencies {
     implementation("com.google.android.gms:play-services-location:21.3.0")
     implementation(platform("com.google.firebase:firebase-bom:34.19.0"))
     implementation("com.google.firebase:firebase-messaging")
+    implementation("com.onesignal:OneSignal:5.10.2")
 }

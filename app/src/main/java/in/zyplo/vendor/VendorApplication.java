@@ -8,6 +8,7 @@ import android.provider.Settings;
 
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
+import com.onesignal.OneSignal;
 
 public final class VendorApplication extends Application {
     public static final String ORDER_CHANNEL = "orders";
@@ -17,7 +18,14 @@ public final class VendorApplication extends Application {
     public void onCreate() {
         super.onCreate();
         createNotificationChannels();
+        initializeOneSignal();
         initializeFirebase();
+    }
+
+    private void initializeOneSignal() {
+        if (!BuildConfig.ONESIGNAL_APP_ID.isEmpty()) {
+            OneSignal.initWithContext(this, BuildConfig.ONESIGNAL_APP_ID);
+        }
     }
 
     private void initializeFirebase() {

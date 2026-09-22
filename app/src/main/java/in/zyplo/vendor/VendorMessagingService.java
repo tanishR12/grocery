@@ -7,11 +7,7 @@ import androidx.core.content.ContextCompat;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
-import org.json.JSONObject;
-
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public final class VendorMessagingService extends FirebaseMessagingService {
     @Override
@@ -39,21 +35,10 @@ public final class VendorMessagingService extends FirebaseMessagingService {
 
     @Override
     public void onNewToken(String token) {
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.execute(() -> {
-            try {
-                NetworkClient.post(
-                        BuildConfig.DEVICE_TOKEN_ENDPOINT,
-                        new JSONObject()
-                                .put("token", token)
-                                .put("platform", "android")
-                );
-            } catch (Exception ignored) {
-                // The web page also receives the current token and can register it.
-            } finally {
-                executor.shutdown();
-            }
-        });
+        getSharedPreferences("push", MODE_PRIVATE)
+                .edit()
+                .putString("last_fcm_token", token)
+                .apply();
     }
 
     private static String value(String first, String fallback) {
