@@ -4,7 +4,6 @@ import android.app.Application;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.media.AudioAttributes;
-import android.os.Build;
 import android.provider.Settings;
 
 import com.google.firebase.FirebaseApp;
@@ -35,7 +34,6 @@ public final class VendorApplication extends Application {
     }
 
     private void createNotificationChannels() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
         NotificationManager manager = getSystemService(NotificationManager.class);
 
         AudioAttributes audio = new AudioAttributes.Builder()

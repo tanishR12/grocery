@@ -7,12 +7,12 @@ fun config(name: String, fallback: String = ""): String =
 
 android {
     namespace = "in.zyplo.vendor"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "in.zyplo.vendor"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0.0"
 
@@ -47,10 +47,10 @@ android {
 }
 
 dependencies {
-    implementation("androidx.activity:activity:1.10.1")
-    implementation("androidx.appcompat:appcompat:1.7.0")
-    implementation("androidx.core:core:1.15.0")
-    implementation("com.google.android.gms:play-services-location:21.3.0")
-    implementation(platform("com.google.firebase:firebase-bom:33.12.0"))
+    implementation("androidx.activity:activity:1.13.0")
+    implementation("androidx.appcompat:appcompat:1.8.0")
+    implementation("androidx.core:core:1.19.0")
+    implementation("com.google.android.gms:play-services-location:21.4.0")
+    implementation(platform("com.google.firebase:firebase-bom:34.19.0"))
     implementation("com.google.firebase:firebase-messaging")
 }

@@ -149,7 +149,7 @@ public final class MainActivity extends AppCompatActivity {
     }
 
     private void offerFloatingBubble() {
-        if (Build.VERSION.SDK_INT < 23 || Settings.canDrawOverlays(this)
+        if (Settings.canDrawOverlays(this)
                 || getPreferences(MODE_PRIVATE).getBoolean("overlay_prompted", false)) return;
         new AlertDialog.Builder(this)
                 .setTitle("Enable order bubble")
@@ -186,7 +186,7 @@ public final class MainActivity extends AppCompatActivity {
         @JavascriptInterface
         public void enableFloatingOrderBubble() {
             runOnUiThread(() -> {
-                if (Build.VERSION.SDK_INT >= 23 && !Settings.canDrawOverlays(MainActivity.this)) {
+                if (!Settings.canDrawOverlays(MainActivity.this)) {
                     Intent intent = new Intent(
                             Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                             Uri.parse("package:" + getPackageName())

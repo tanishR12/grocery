@@ -10,7 +10,6 @@ import android.graphics.drawable.GradientDrawable;
 import android.media.AudioAttributes;
 import android.media.MediaPlayer;
 import android.media.RingtoneManager;
-import android.os.Build;
 import android.os.IBinder;
 import android.provider.Settings;
 import android.view.Gravity;
@@ -70,14 +69,13 @@ public final class OrderAlertService extends Service {
                 .setCategory(NotificationCompat.CATEGORY_CALL)
                 .setVibrate(new long[]{0, 500, 250, 500, 250, 900});
 
-        addAction(builder, source, orderId, "accept", "Accept", source.getStringExtra("accept_url"));
-        addAction(builder, source, orderId, "reject", "Reject", source.getStringExtra("reject_url"));
+        addAction(builder, orderId, "accept", "Accept", source.getStringExtra("accept_url"));
+        addAction(builder, orderId, "reject", "Reject", source.getStringExtra("reject_url"));
         return builder.build();
     }
 
     private void addAction(
             NotificationCompat.Builder builder,
-            Intent source,
             String orderId,
             String action,
             String label,
@@ -116,7 +114,7 @@ public final class OrderAlertService extends Service {
     }
 
     private void showBubble() {
-        if (bubble != null || Build.VERSION.SDK_INT < 23 || !Settings.canDrawOverlays(this)) return;
+        if (bubble != null || !Settings.canDrawOverlays(this)) return;
         windowManager = getSystemService(WindowManager.class);
         TextView view = new TextView(this);
         view.setText("NEW\nORDER");
@@ -130,19 +128,17 @@ public final class OrderAlertService extends Service {
         background.setStroke(4, Color.WHITE);
         view.setBackground(background);
 
-        int type = Build.VERSION.SDK_INT >= 26
-                ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-                : WindowManager.LayoutParams.TYPE_PHONE;
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                 176,
                 176,
-                type,
+                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSLUCENT
         );
         params.gravity = Gravity.TOP | Gravity.END;
         params.x = 24;
         params.y = 240;
+        view.setOnClickListener(clicked -> openOrder());
         view.setOnTouchListener(new BubbleTouchListener(params));
         windowManager.addView(view, params);
         bubble = view;
@@ -184,7 +180,7 @@ public final class OrderAlertService extends Service {
                 case MotionEvent.ACTION_UP:
                     if (Math.abs(event.getRawX() - downX) < 18
                             && Math.abs(event.getRawY() - downY) < 18) {
-                        openOrder();
+                        view.performClick();
                     }
                     return true;
                 default:
