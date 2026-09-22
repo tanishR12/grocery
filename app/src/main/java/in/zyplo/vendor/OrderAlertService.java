@@ -16,9 +16,9 @@ import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.AppCompatTextView;
 import androidx.core.app.NotificationCompat;
 
 public final class OrderAlertService extends Service {
@@ -116,7 +116,7 @@ public final class OrderAlertService extends Service {
     private void showBubble() {
         if (bubble != null || !Settings.canDrawOverlays(this)) return;
         windowManager = getSystemService(WindowManager.class);
-        TextView view = new TextView(this) {
+        AppCompatTextView view = new AppCompatTextView(this) {
             @Override
             public boolean performClick() {
                 super.performClick();
