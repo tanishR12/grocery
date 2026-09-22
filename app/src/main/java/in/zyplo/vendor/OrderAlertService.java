@@ -116,7 +116,13 @@ public final class OrderAlertService extends Service {
     private void showBubble() {
         if (bubble != null || !Settings.canDrawOverlays(this)) return;
         windowManager = getSystemService(WindowManager.class);
-        TextView view = new TextView(this);
+        TextView view = new TextView(this) {
+            @Override
+            public boolean performClick() {
+                super.performClick();
+                return true;
+            }
+        };
         view.setText("NEW\nORDER");
         view.setTextColor(Color.WHITE);
         view.setTextSize(12);

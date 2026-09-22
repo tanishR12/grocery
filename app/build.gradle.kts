@@ -51,7 +51,8 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.8.0")
     // 1.19 requires unreleased API 37/AGP 9.1; 1.18 is current for SDK 36.
     implementation("androidx.core:core:1.18.0")
-    implementation("com.google.android.gms:play-services-location:21.4.0")
+    // 21.4 metadata requires a newer Kotlin toolchain than production AGP 8.9.
+    implementation("com.google.android.gms:play-services-location:21.3.0")
     implementation(platform("com.google.firebase:firebase-bom:34.19.0"))
     implementation("com.google.firebase:firebase-messaging")
 }
