@@ -1,0 +1,61 @@
+plugins {
+    id("com.android.application")
+}
+
+fun config(name: String, fallback: String = ""): String =
+    providers.gradleProperty(name).orElse(fallback).get()
+
+android {
+    namespace = "in.zyplo.vendor"
+    compileSdk = 36
+
+    defaultConfig {
+        applicationId = "in.zyplo.vendor"
+        minSdk = 26
+        targetSdk = 36
+        versionCode = 1
+        versionName = "1.0.0"
+
+        buildConfigField("String", "BASE_URL", "\"${config("ZYPLO_BASE_URL", "https://zyplo.in/grocery-vendor-login")}\"")
+        buildConfigField("String", "ALLOWED_HOST", "\"${config("ZYPLO_ALLOWED_HOST", "zyplo.in")}\"")
+        buildConfigField("String", "LOCATION_ENDPOINT", "\"${config("ZYPLO_LOCATION_ENDPOINT", "https://zyplo.in/api/vendor/location")}\"")
+        buildConfigField("String", "ONESIGNAL_APP_ID", "\"${config("ONESIGNAL_APP_ID", "9bf9df8e-1124-44aa-bc80-b0399dd26e8a")}\"")
+        buildConfigField("String", "SUPABASE_URL", "\"${config("SUPABASE_URL", "https://itjjcscyqqxkeipkccgl.supabase.co")}\"")
+        buildConfigField("String", "SUPABASE_ANON_KEY", "\"${config("SUPABASE_ANON_KEY")}\"")
+        buildConfigField("String", "FIREBASE_APPLICATION_ID", "\"${config("FIREBASE_APPLICATION_ID")}\"")
+        buildConfigField("String", "FIREBASE_API_KEY", "\"${config("FIREBASE_API_KEY")}\"")
+        buildConfigField("String", "FIREBASE_PROJECT_ID", "\"${config("FIREBASE_PROJECT_ID")}\"")
+        buildConfigField("String", "FIREBASE_SENDER_ID", "\"${config("FIREBASE_SENDER_ID")}\"")
+    }
+
+    buildFeatures {
+        buildConfig = true
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation("androidx.activity:activity:1.13.0")
+    implementation("androidx.appcompat:appcompat:1.8.0")
+    // 1.19 requires unreleased API 37/AGP 9.1; 1.18 is current for SDK 36.
+    implementation("androidx.core:core:1.18.0")
+    // 21.4 metadata requires a newer Kotlin toolchain than production AGP 8.9.
+    implementation("com.google.android.gms:play-services-location:21.3.0")
+    implementation(platform("com.google.firebase:firebase-bom:34.19.0"))
+    implementation("com.google.firebase:firebase-messaging")
+    implementation("com.onesignal:OneSignal:5.10.2")
+}
